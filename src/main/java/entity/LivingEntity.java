@@ -11,11 +11,11 @@ public class LivingEntity extends Entity {
 
     public void hurt(int damage) {
         health -= damage;
-        if(health < 0) health = 0;
+        if (health < 0) health = 0;
     }
 
     public void heal(int amount) {
         health += amount;
-        if(health > maxHealth) health = maxHealth;
+        if (health > maxHealth) health = maxHealth;
     }
 }
