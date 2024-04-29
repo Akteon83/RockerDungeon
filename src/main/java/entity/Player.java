@@ -3,6 +3,7 @@ package main.java.entity;
 import main.java.GamePanel;
 import main.java.Instrument;
 import main.java.handler.KeyHandler;
+import main.java.tile.TileManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,6 +21,7 @@ public class Player extends LivingEntity {
     private double angle;
     private int counter;
     private boolean imageAlt;
+    private Rectangle collisionModel;
     public List<ProjectileEntity> projectiles;
     public Instrument instrument;
     public Image instrumentImage;
@@ -55,13 +57,65 @@ public class Player extends LivingEntity {
     public void move() {
         int dx = handler.dx;
         int dy = handler.dy;
+
         if (dx == 0 || dy == 0) {
             x += dx * velocity;
             y += dy * velocity;
         } else {
-            x += dx * velocity / 1.4f;
-            y += dy * velocity / 1.4f;
+            x += dx * velocity / 1.414d;
+            y += dy * velocity / 1.414d;
         }
+
+        collisionModel = new Rectangle(getX() + 8 * GamePanel.SIZE, getY() + 24 * GamePanel.SIZE, getWidth() / 2, getHeight() / 4);
+        boolean collisionTopLeft = panel.tileManager.collisionMap[collisionModel.y / TileManager.TILE_SIZE][collisionModel.x / TileManager.TILE_SIZE];
+        boolean collisionTopRight = panel.tileManager.collisionMap[collisionModel.y / TileManager.TILE_SIZE][(collisionModel.x + collisionModel.width) / TileManager.TILE_SIZE];
+        boolean collisionBottomLeft = panel.tileManager.collisionMap[(collisionModel.y + collisionModel.height) / TileManager.TILE_SIZE ][collisionModel.x / TileManager.TILE_SIZE];
+        boolean collisionBottomRight = panel.tileManager.collisionMap[(collisionModel.y + collisionModel.height) / TileManager.TILE_SIZE][(collisionModel.x + collisionModel.width) / TileManager.TILE_SIZE];
+
+        if (collisionTopLeft || collisionTopRight || collisionBottomLeft || collisionBottomRight) {
+            if (collisionTopLeft && collisionTopRight) {
+                y += TileManager.TILE_SIZE - collisionModel.y % TileManager.TILE_SIZE;
+            }
+            if (collisionBottomLeft && collisionBottomRight) {
+                y -= (collisionModel.y + collisionModel.height) % TileManager.TILE_SIZE;
+            }
+            if (collisionTopLeft && collisionBottomLeft) {
+                x += TileManager.TILE_SIZE - collisionModel.x % TileManager.TILE_SIZE;
+            }
+            if (collisionTopRight && collisionBottomRight) {
+                x -= (collisionModel.x + collisionModel.width) % TileManager.TILE_SIZE;
+            }
+
+            if (collisionTopLeft) {
+                if (collisionModel.y % TileManager.TILE_SIZE > collisionModel.x % TileManager.TILE_SIZE) {
+                    y += TileManager.TILE_SIZE - collisionModel.y % TileManager.TILE_SIZE;
+                } else {
+                    x += TileManager.TILE_SIZE - collisionModel.x % TileManager.TILE_SIZE;
+                }
+            }
+            if (collisionTopRight) {
+                if (collisionModel.y % TileManager.TILE_SIZE > TileManager.TILE_SIZE - (collisionModel.x + collisionModel.width) % TileManager.TILE_SIZE) {
+                    y += TileManager.TILE_SIZE - collisionModel.y % TileManager.TILE_SIZE;
+                } else {
+                    x -= (collisionModel.x + collisionModel.width) % TileManager.TILE_SIZE;
+                }
+            }
+            if (collisionBottomLeft) {
+                if ((collisionModel.y + collisionModel.height) % TileManager.TILE_SIZE < TileManager.TILE_SIZE - collisionModel.x % TileManager.TILE_SIZE) {
+                    y -= (collisionModel.y + collisionModel.height) % TileManager.TILE_SIZE;
+                } else {
+                    x += TileManager.TILE_SIZE - collisionModel.x % TileManager.TILE_SIZE;
+                }
+            }
+            if (collisionBottomRight) {
+                if ((collisionModel.y + collisionModel.height) % TileManager.TILE_SIZE < (collisionModel.x + collisionModel.width) % TileManager.TILE_SIZE) {
+                    y -= (collisionModel.y + collisionModel.height) % TileManager.TILE_SIZE;
+                } else {
+                    x -= (collisionModel.x + collisionModel.width) % TileManager.TILE_SIZE;
+                }
+            }
+        }
+
         if (dx != 0 || dy != 0) {
             if (counter == 15) {
                 imageAlt = !imageAlt;
@@ -103,16 +157,16 @@ public class Player extends LivingEntity {
     public void update(Point mousePosition) {
         move();
 
-        int dx = mousePosition.x - getCenterX();
-        int dy = mousePosition.y - getCenterY();
-        double distance = getCenterPosition().distance(mousePosition);
+        int dx = mousePosition.x - panel.screenCenter.x;
+        int dy = mousePosition.y - panel.screenCenter.y;
+        double distance = panel.screenCenter.distance(mousePosition);
         angle = Math.acos(dx / distance) * Integer.signum(dy);
 
         if (shieldDelay > 0) --shieldDelay;
 
         if (shield < maxShield && shieldDelay == 0) ++shield;
 
-        if (mousePosition.x > getCenterX()) {
+        if (mousePosition.x > panel.screenCenter.x) {
             if (imageAlt) {
                 image = imageRightMoving;
             } else {

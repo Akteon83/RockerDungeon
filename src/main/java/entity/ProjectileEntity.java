@@ -26,15 +26,13 @@ public class ProjectileEntity extends Entity {
     }
 
     private void move() {
-        x += (float) (velocity * cos);
-        y += (float) (velocity * sin);
+        x += velocity * cos;
+        y += velocity * sin;
     }
 
     public void update() {
         move();
-        int panelWidth = panel.getWidth();
-        int panelHeight = panel.getHeight();
-        if (x > panelWidth || y > panelHeight || x + 8 * GamePanel.SIZE < 0 || y + 8 * GamePanel.SIZE < 0)
+        if (x > 32 * 16 * GamePanel.SIZE || y > 32 * 16 * GamePanel.SIZE || x + 8 * GamePanel.SIZE < 0 || y + 8 * GamePanel.SIZE < 0)
             visible = false;
     }
 }

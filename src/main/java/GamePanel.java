@@ -23,24 +23,27 @@ public class GamePanel extends JPanel implements Runnable {
     private int frame;
     public final KeyHandler keyHandler = new KeyHandler();
     public final MouseHandler mouseHandler = new MouseHandler();
-    private final Dimension screenSize;
-    private final Point screenCenter;
-    TileManager tileManager = new TileManager(this);
+    public final Dimension screenSize;
+    public final Rectangle screenRectangle;
+    public final Point screenCenter;
+    public TileManager tileManager;
     private Point mousePosition;
-    private Player player;
+    public Player player;
     private List<InstrumentEntity> instrumentEntities;
     private int instrumentNameTimer = 0;
 
     public GamePanel(int width, int height) {
         setPreferredSize(new Dimension(width, height));
-        setBackground(Color.DARK_GRAY);
+        setBackground(Color.BLACK);
         setDoubleBuffered(true);
         addKeyListener(keyHandler);
         addMouseListener(mouseHandler);
         setFocusable(true);
         initFonts();
         screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        screenRectangle = new Rectangle(screenSize);
         screenCenter = new Point(screenSize.width / 2, screenSize.height / 2);
+        tileManager = new TileManager(this);
         initEntities();
         startGameThread();
         frame = 0;
@@ -144,11 +147,12 @@ public class GamePanel extends JPanel implements Runnable {
             mouseHandler.rightClicked = false;
             player.fireCharge = 0;
 
-            if (player.getCenterPosition().distance(mousePosition) < 64 * SIZE) {
+            if (screenCenter.distance(mousePosition) < 64 * SIZE) {
                 for (int i = 0; i < instrumentEntities.size(); ++i) {
                     InstrumentEntity instrumentEntity = instrumentEntities.get(i);
-                    if (mousePosition.getX() > instrumentEntity.getX() && mousePosition.getX() < instrumentEntity.getX() + instrumentEntity.getWidth() &&
-                            mousePosition.getY() > instrumentEntity.getY() && mousePosition.getY() < instrumentEntity.getY() + instrumentEntity.getHeight()) {
+                    Point drawPosition = new Point(instrumentEntity.getX() + screenCenter.x - player.getCenterX(), instrumentEntity.getY() + screenCenter.y - player.getCenterY());
+                    if (mousePosition.getX() > drawPosition.x && mousePosition.getX() < drawPosition.x + instrumentEntity.getWidth() &&
+                            mousePosition.getY() > drawPosition.y && mousePosition.getY() < drawPosition.y + instrumentEntity.getHeight()) {
                         if (player.getCenterPosition().distance(instrumentEntity.getCenterPosition()) < 48 * SIZE) {
                             if (player.instrument != null) {
                                 instrumentEntities.set(i, new InstrumentEntity(instrumentEntity.getX(), instrumentEntity.getY(), player.instrument));
@@ -174,16 +178,19 @@ public class GamePanel extends JPanel implements Runnable {
 
         InstrumentEntity viewedInstrument = null;
         for (InstrumentEntity instrumentEntity : instrumentEntities) {
-            g2.drawImage(instrumentEntity.getImage(), instrumentEntity.getX(), instrumentEntity.getY(), instrumentEntity.getWidth(), instrumentEntity.getHeight(), this);
-            if (player.getCenterPosition().distance(mousePosition) < 64 * SIZE) {
-                if (mousePosition.getX() > instrumentEntity.getX() && mousePosition.getX() < instrumentEntity.getX() + instrumentEntity.getWidth() &&
-                        mousePosition.getY() > instrumentEntity.getY() && mousePosition.getY() < instrumentEntity.getY() + instrumentEntity.getHeight()) {
-                    if (player.getCenterPosition().distance(instrumentEntity.getCenterPosition()) < 48 * SIZE) viewedInstrument = instrumentEntity;
+            Point drawPosition = new Point(instrumentEntity.getX() + screenCenter.x - player.getCenterX(), instrumentEntity.getY() + screenCenter.y - player.getCenterY());
+            if (screenRectangle.intersects(new Rectangle(drawPosition, new Dimension(16 * SIZE, 32 * SIZE)))) {
+                g2.drawImage(instrumentEntity.getImage(), drawPosition.x, drawPosition.y, instrumentEntity.getWidth(), instrumentEntity.getHeight(), this);
+                if (screenCenter.distance(mousePosition) < 64 * SIZE) {
+                    if (mousePosition.getX() > drawPosition.x && mousePosition.getX() < drawPosition.x + instrumentEntity.getWidth() &&
+                            mousePosition.getY() > drawPosition.y && mousePosition.getY() < drawPosition.y + instrumentEntity.getHeight()) {
+                        if (player.getCenterPosition().distance(instrumentEntity.getCenterPosition()) < 48 * SIZE) viewedInstrument = instrumentEntity;
+                    }
                 }
             }
         }
 
-        g2.drawImage(player.getImage(), player.getX(), player.getY(), player.getWidth(), player.getHeight(), this);
+        g2.drawImage(player.getImage(), screenCenter.x - 16 * SIZE, screenCenter.y - 16 * SIZE, player.getWidth(), player.getHeight(), this);
 
         if (player.fireCharge > 0) {
             Image image;
@@ -195,18 +202,21 @@ public class GamePanel extends JPanel implements Runnable {
                 case 4 -> image = (new ImageIcon("res/ui/charge_indicator_4.png")).getImage();
                 default -> image = (new ImageIcon("res/ui/charge_indicator_5.png")).getImage();
             }
-            g2.drawImage(image, player.getX() + 8 * SIZE, player.getY() - 8 * SIZE, 16 * SIZE, 8 * SIZE, this);
+            g2.drawImage(image, screenCenter.x - 8 * SIZE, screenCenter.y - 24 * SIZE, 16 * SIZE, 8 * SIZE, this);
         }
 
         if (player.instrument != null) {
-            g2.rotate(player.getAngle(), player.getCenterX(), player.getCenterY());
-            g2.drawImage(player.instrumentImage, player.getCenterX() + 2 * SIZE, player.getCenterY() - 16 * SIZE,
+            g2.rotate(player.getAngle(), screenCenter.x, screenCenter.y);
+            g2.drawImage(player.instrumentImage, screenCenter.x + 2 * SIZE, screenCenter.y - 16 * SIZE,
                     16 * SIZE, 32 * SIZE, this);
-            g2.rotate(-player.getAngle(), player.getCenterX(), player.getCenterY());
+            g2.rotate(-player.getAngle(), screenCenter.x, screenCenter.y);
         }
 
         for (ProjectileEntity projectile : player.projectiles) {
-            g2.drawImage(projectile.getImage(), projectile.getX(), projectile.getY(), projectile.getWidth(), projectile.getHeight(), this);
+            Point drawPosition = new Point(projectile.getX() + screenCenter.x - player.getCenterX(), projectile.getY() + screenCenter.y - player.getCenterY());
+            if (screenRectangle.intersects(new Rectangle(drawPosition, new Dimension(projectile.getWidth(), projectile.getHeight())))) {
+                g2.drawImage(projectile.getImage(), drawPosition.x, drawPosition.y, projectile.getWidth(), projectile.getHeight(), this);
+            }
         }
 
         g2.drawImage(new ImageIcon("res/ui/health_bar.png").getImage(), 11 * SIZE, 11 * SIZE, (player.getHealth() + 1) / 2 * SIZE, 5 * SIZE, this);
@@ -218,14 +228,15 @@ public class GamePanel extends JPanel implements Runnable {
             if (viewedInstrument.instrument.equals(InstrumentTypes.DRUM)) k = -3;
             g2.setColor(viewedInstrument.instrument.rarity.getColor());
             g2.drawString(viewedInstrument.instrument.name,
-                    viewedInstrument.getCenterX() - (int) g2.getFontMetrics().getStringBounds(viewedInstrument.instrument.name, g2).getWidth() / 2, viewedInstrument.getY() - (4 * SIZE) * k);
+                    viewedInstrument.getCenterX() + screenCenter.x - player.getCenterX() - (int) g2.getFontMetrics().getStringBounds(viewedInstrument.instrument.name, g2).getWidth() / 2,
+                    viewedInstrument.getY() + screenCenter.y - player.getCenterY() - (4 * SIZE) * k);
         }
 
         if (instrumentNameTimer > 0) {
             assert player.instrument != null;
             g2.setColor(player.instrument.rarity.getColor());
             g2.drawString(player.instrument.name,
-                    player.getCenterX() - (int) g2.getFontMetrics().getStringBounds(player.instrument.name, g2).getWidth() / 2, player.getY() - 4 * SIZE);
+                    screenCenter.x - (int) g2.getFontMetrics().getStringBounds(player.instrument.name, g2).getWidth() / 2, screenCenter.y - 20 * SIZE);
             --instrumentNameTimer;
         }
 
