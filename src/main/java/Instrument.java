@@ -28,6 +28,6 @@ public class Instrument {
         this.imageRight = imageRight;
         this.imageLeft = imageLeft;
         this.projectileImage = projectileImage;
-        if(projectileCount < 1 || projectileCount > 10) this.projectileCount = 1;
+        if (projectileCount < 1 || projectileCount > 10) this.projectileCount = 1;
     }
 }

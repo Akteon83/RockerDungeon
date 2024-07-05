@@ -16,7 +16,7 @@ public class TileManager {
     public boolean[][] collisionMap;
     public Image[][] visualMap;
 
-    public TileManager(GamePanel panel) {
+    public TileManager(File file, GamePanel panel) {
         this.panel = panel;
         tileTypes = new Tile[16];
         dynamicTileTypes = new Tile[32];
@@ -24,16 +24,17 @@ public class TileManager {
         collisionMap = new boolean[32][32];
         visualMap = new Image[32][32];
         getTileTypes();
-        loadMap();
+        loadMap(file);
     }
 
-    public void getTileTypes() {
-        tileTypes[0] = new Tile(null, false);
+    private void getTileTypes() {
+        tileTypes[0] = new Tile(null, true);
         tileTypes[1] = new Tile(new ImageIcon("res/tile/bricks_small_tile.png").getImage(), false);
         tileTypes[2] = new Tile(new ImageIcon("res/tile/bricks_tile.png").getImage(), false);
         tileTypes[3] = new Tile(null, false);
         tileTypes[4] = new Tile(new ImageIcon("res/tile/wall_tile.png").getImage(), true);
-        tileTypes[5] = new Tile(null, true);
+        tileTypes[5] = new Tile(new ImageIcon("res/tile/wall_bottom_tile.png").getImage(), true);
+        tileTypes[6] = new Tile(null, true);
 
         dynamicTileTypes[0] = new Tile(new ImageIcon("res/tile/bricks_tile.png").getImage(), false);
         dynamicTileTypes[1] = new Tile(new ImageIcon("res/tile/dynamic/bricks_dynamic_1_tile.png").getImage(), false);
@@ -70,9 +71,8 @@ public class TileManager {
         dynamicTileTypes[31] = new Tile(new ImageIcon("res/tile/dynamic/roof_dynamic_15_tile.png").getImage(), true);
     }
 
-    public void loadMap() {
+    private void loadMap(File file) {
         try {
-            File file = new File("res/map/map_a.txt");
             BufferedReader reader = new BufferedReader(new FileReader(file));
             for (int y = 0; y < 32; ++y) {
                 String line = reader.readLine();
@@ -89,7 +89,7 @@ public class TileManager {
         loadVisualMap();
     }
 
-    public void loadVisualMap() {
+    private void loadVisualMap() {
         for (int y = 0; y < 32; ++y) {
             for (int x = 0; x < 32; ++x) {
                 if (map[y][x] == 3) {
@@ -99,12 +99,12 @@ public class TileManager {
                     if (y != 0 && map[y - 1][x] == 3) index += 4;
                     if (y != 31 && map[y + 1][x] == 3) index += 8;
                     visualMap[y][x] = dynamicTileTypes[index].image();
-                } else if (map[y][x] == 5) {
+                } else if (map[y][x] == 6) {
                     int index = 0;
-                    if (x != 0 && map[y][x - 1] == 5) index += 1;
-                    if (x != 31 && map[y][x + 1] == 5) index += 2;
-                    if (y != 0 && map[y - 1][x] == 5) index += 4;
-                    if (y != 31 && map[y + 1][x] == 5) index += 8;
+                    if (x != 0 && map[y][x - 1] == 6) index += 1;
+                    if (x != 31 && map[y][x + 1] == 6) index += 2;
+                    if (y != 0 && map[y - 1][x] == 6) index += 4;
+                    if (y != 31 && map[y + 1][x] == 6) index += 8;
                     visualMap[y][x] = dynamicTileTypes[index + 16].image();
                 } else {
                     visualMap[y][x] = tileTypes[map[y][x]].image();

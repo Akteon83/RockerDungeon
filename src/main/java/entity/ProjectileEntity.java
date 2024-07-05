@@ -1,28 +1,34 @@
 package main.java.entity;
 
 import main.java.GamePanel;
+import main.java.tile.TileManager;
 
-import javax.swing.*;
 import java.awt.*;
 
 public class ProjectileEntity extends Entity {
 
-    public int damage;
+    private int damage;
     private final double cos;
     private final double sin;
-    public boolean visible = true;
+    public boolean isHostile;
+    public boolean isActive;
 
-    public ProjectileEntity(double x, double y, double cos, double sin, int damage, int velocity, Image image, GamePanel panel) {
+    public ProjectileEntity(double x, double y, double angle, boolean isHostile, int damage, int velocity, Image image, GamePanel panel) {
+        super(x, y, panel);
         width = 8 * 3;
         height = 8 * 3;
-        this.x = x;
-        this.y = y;
-        this.cos = cos;
-        this.sin = sin;
+        isActive = true;
+        this.isHostile = isHostile;
+        this.cos = Math.cos(angle);
+        this.sin = Math.sin(angle);
         this.damage = damage;
         this.velocity = velocity;
         this.image = image;
         this.panel = panel;
+    }
+
+    public int getDamage() {
+        return damage;
     }
 
     private void move() {
@@ -30,9 +36,14 @@ public class ProjectileEntity extends Entity {
         y += velocity * sin;
     }
 
+    public void deactivate() {
+        isActive = false;
+    }
+
     public void update() {
         move();
-        if (x > 32 * 16 * GamePanel.SIZE || y > 32 * 16 * GamePanel.SIZE || x + 8 * GamePanel.SIZE < 0 || y + 8 * GamePanel.SIZE < 0)
-            visible = false;
+        if (panel.tileManager.collisionMap[getCenterY() / TileManager.TILE_SIZE][getCenterX() / TileManager.TILE_SIZE]) {
+            deactivate();
+        }
     }
 }

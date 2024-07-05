@@ -1,9 +1,20 @@
 package main.java.entity;
 
-public class LivingEntity extends Entity {
+import main.java.GamePanel;
+
+import java.awt.*;
+
+public abstract class LivingEntity extends Entity {
 
     protected int health;
     protected int maxHealth;
+    public Rectangle collisionModel;
+
+    public LivingEntity(double x, double y, int maxHealth, GamePanel panel) {
+        super(x, y, panel);
+        this.maxHealth = maxHealth;
+        health = maxHealth;
+    }
 
     public int getHealth() {
         return health;

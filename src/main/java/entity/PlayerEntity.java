@@ -2,27 +2,29 @@ package main.java.entity;
 
 import main.java.GamePanel;
 import main.java.Instrument;
+import main.java.InstrumentTypes;
+import main.java.Sound;
 import main.java.handler.KeyHandler;
 import main.java.tile.TileManager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
-public class Player extends LivingEntity {
+public class PlayerEntity extends LivingEntity {
 
     private final KeyHandler handler;
     private int shield;
-    private int maxShield;
+    private final int maxShield;
     private int shieldDelay;
     public int fireDelay;
     public int fireCharge;
     private double angle;
     private int counter;
     private boolean imageAlt;
-    private Rectangle collisionModel;
-    public List<ProjectileEntity> projectiles;
     public Instrument instrument;
     public Image instrumentImage;
 
@@ -31,17 +33,12 @@ public class Player extends LivingEntity {
     Image imageLeft = (new ImageIcon("res/player_sprite_left.png")).getImage();
     Image imageLeftMoving = (new ImageIcon("res/player_sprite_left_moving.png")).getImage();
 
-    public Player(double x, double y, GamePanel panel) {
-        projectiles = new ArrayList<>();
+    public PlayerEntity(double x, double y, GamePanel panel) {
+        super(x, y, 100, panel);
         width = 32 * GamePanel.SIZE;
         height = 32 * GamePanel.SIZE;
-        maxHealth = 100;
-        health = maxHealth;
         maxShield = 100;
         shield = maxShield;
-        this.x = x;
-        this.y = y;
-        this.panel = panel;
         this.handler = panel.keyHandler;
         velocity = 3;
     }
@@ -120,6 +117,7 @@ public class Player extends LivingEntity {
             if (counter == 15) {
                 imageAlt = !imageAlt;
                 counter = 0;
+                if (!imageAlt) playStepSound();
             }
             ++counter;
         } else {
@@ -131,14 +129,14 @@ public class Player extends LivingEntity {
     public void fire() {
         int projectileCount = instrument.projectileCount;
         if (projectileCount == 1) {
-            projectiles.add(new ProjectileEntity(getCenterX() + (24 * Math.cos(angle) - 4) * GamePanel.SIZE, getCenterY() + (24 * Math.sin(angle) - 4) * GamePanel.SIZE,
-                    Math.cos(angle), Math.sin(angle), instrument.projectileDamage, instrument.projectileVelocity, instrument.projectileImage, panel));
+            panel.projectiles.add(new ProjectileEntity(getCenterX() + (24 * Math.cos(angle) - 4) * GamePanel.SIZE, getCenterY() + (24 * Math.sin(angle) - 4) * GamePanel.SIZE,
+                    angle, false, instrument.projectileDamage, instrument.projectileVelocity, instrument.projectileImage, panel));
         } else {
             double baseAngle = Math.toDegrees(angle) - 5 * (projectileCount - 1);
             for (int i = 0; i < projectileCount; ++i) {
                 double currentAngle = Math.toRadians(baseAngle + 10 * i);
-                projectiles.add(new ProjectileEntity(getCenterX() + (24 * Math.cos(currentAngle) - 4) * GamePanel.SIZE, getCenterY() + (24 * Math.sin(currentAngle) - 4) * GamePanel.SIZE,
-                        Math.cos(currentAngle), Math.sin(currentAngle), instrument.projectileDamage, instrument.projectileVelocity, instrument.projectileImage, panel));
+                panel.projectiles.add(new ProjectileEntity(getCenterX() + (24 * Math.cos(currentAngle) - 4) * GamePanel.SIZE, getCenterY() + (24 * Math.sin(currentAngle) - 4) * GamePanel.SIZE,
+                        currentAngle, false, instrument.projectileDamage, instrument.projectileVelocity, instrument.projectileImage, panel));
             }
         }
     }
@@ -152,6 +150,15 @@ public class Player extends LivingEntity {
             super.hurt(damage);
         }
         shieldDelay = 300;
+    }
+
+    private void playStepSound() {
+        switch (new Random().nextInt(4)) {
+            case 0 -> new Sound(new File("res/sound/step_1.wav")).play();
+            case 1 -> new Sound(new File("res/sound/step_2.wav")).play();
+            case 2 -> new Sound(new File("res/sound/step_3.wav")).play();
+            case 3 -> new Sound(new File("res/sound/step_4.wav")).play();
+        }
     }
 
     public void update(Point mousePosition) {

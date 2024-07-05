@@ -6,11 +6,17 @@ import java.awt.*;
 
 public abstract class Entity {
 
-    protected GamePanel panel = null;
+    protected GamePanel panel;
     protected double x, y;
     protected int width, height;
     protected int velocity;
     protected Image image;
+
+    public Entity(double x, double y, GamePanel panel) {
+        this.x = x;
+        this.y = y;
+        this.panel = panel;
+    }
 
     public int getX() {
         return (int) x;
