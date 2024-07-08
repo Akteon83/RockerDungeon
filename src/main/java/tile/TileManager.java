@@ -33,7 +33,7 @@ public class TileManager {
         tileTypes[2] = new Tile(new ImageIcon("res/tile/bricks_tile.png").getImage(), false);
         tileTypes[3] = new Tile(null, false);
         tileTypes[4] = new Tile(new ImageIcon("res/tile/wall_tile.png").getImage(), true);
-        tileTypes[5] = new Tile(new ImageIcon("res/tile/wall_bottom_tile.png").getImage(), true);
+        tileTypes[5] = new Tile(new ImageIcon("res/tile/wall_bottom_tile.png").getImage(), false);
         tileTypes[6] = new Tile(null, true);
 
         dynamicTileTypes[0] = new Tile(new ImageIcon("res/tile/bricks_tile.png").getImage(), false);

@@ -5,6 +5,8 @@ import main.java.entity.PlayerEntity;
 import main.java.entity.ProjectileEntity;
 import main.java.handler.KeyHandler;
 import main.java.handler.MouseHandler;
+import main.java.instrument.Instrument;
+import main.java.instrument.InstrumentTypes;
 import main.java.tile.TileManager;
 
 import javax.swing.*;
@@ -78,6 +80,7 @@ public class GamePanel extends JPanel implements Runnable {
         instrumentEntities.add(new InstrumentEntity(384, 256, InstrumentTypes.STRATOCASTER_GUITAR, this));
         instrumentEntities.add(new InstrumentEntity(384, 384, InstrumentTypes.DRUM, this));
         instrumentEntities.add(new InstrumentEntity(512, 512, InstrumentTypes.BLACK_ARROW_GUITAR, this));
+        instrumentEntities.add(new InstrumentEntity(512, 384, InstrumentTypes.ACOUSTIC_GUITAR, this));
     }
 
     public void startGameThread() {
@@ -127,13 +130,11 @@ public class GamePanel extends JPanel implements Runnable {
     private void updateProjectiles() {
         for (int i = 0; i < projectiles.size(); ++i) {
             projectiles.get(i).update();
-            if (!projectiles.get(i).isActive) projectiles.remove(i);
+            if (!projectiles.get(i).isActive()) projectiles.remove(i);
         }
     }
 
     private void updateInstrument() {
-        if (player.fireDelay > 0) --player.fireDelay;
-
         if (player.instrument != null) {
             Instrument instrument = player.instrument;
             if (instrumentNameTimer > 0) --instrumentNameTimer;
@@ -153,6 +154,9 @@ public class GamePanel extends JPanel implements Runnable {
                         player.fire();
                         if (player.fireCharge == 60) {
                             player.fireDelay = instrument.fireDelay;
+                            new Sound(new File("res/sound/drum_2.wav")).play();
+                        } else {
+                            new Sound(new File("res/sound/drum_1.wav")).play();
                         }
                     }
                 }
@@ -164,10 +168,7 @@ public class GamePanel extends JPanel implements Runnable {
             }
 
             if (keyHandler.qPressed) {
-                player.fireCharge = 0;
-                instrumentEntities.add(new InstrumentEntity(player.getCenterX() + (32 * Math.cos(player.getAngle()) - 8) * SIZE,
-                        player.getCenterY() + (32 * Math.sin(player.getAngle()) - 16) * SIZE, player.instrument, this));
-                player.instrument = null;
+                player.throwInstrument();
                 instrumentNameTimer = 0;
             }
         }
@@ -176,24 +177,16 @@ public class GamePanel extends JPanel implements Runnable {
     private void updatePicking() {
         if (mouseHandler.rightClicked) {
             mouseHandler.rightClicked = false;
+            Point cursorPosition = new Point(player.getCenterX() - screenSize.width / 2 + mousePosition.x,
+                    player.getCenterY() - screenSize.height / 2 + mousePosition.y);
             if (screenCenter.distance(mousePosition) < 64 * SIZE) {
-                for (int i = 0; i < instrumentEntities.size(); ++i) {
-                    InstrumentEntity instrumentEntity = instrumentEntities.get(i);
-                    Point drawPosition = new Point(instrumentEntity.getX() + screenCenter.x - player.getCenterX(), instrumentEntity.getY() + screenCenter.y - player.getCenterY());
-                    if (mousePosition.getX() > drawPosition.x && mousePosition.getX() < drawPosition.x + instrumentEntity.getWidth() &&
-                            mousePosition.getY() > drawPosition.y && mousePosition.getY() < drawPosition.y + instrumentEntity.getHeight()) {
-                        if (player.getCenterPosition().distance(instrumentEntity.getCenterPosition()) < 48 * SIZE) {
-                            player.fireCharge = 0;
-                            if (player.instrument != null) {
-                                instrumentEntities.set(i, new InstrumentEntity(instrumentEntity.getX(), instrumentEntity.getY(), player.instrument, this));
-                            } else {
-                                instrumentEntities.remove(i);
-                            }
-                            player.instrument = instrumentEntity.instrument;
-                            instrumentNameTimer = 120;
-                            new Sound(new File("res/sound/test_sound.wav")).play();
-                            break;
-                        }
+                for (InstrumentEntity instrumentEntity : instrumentEntities) {
+                    if (instrumentEntity.getHitBox().contains(cursorPosition) &&
+                            player.getCenterPosition().distance(instrumentEntity.getCenterPosition()) < 48 * SIZE) {
+                        player.pickInstrument(instrumentEntity);
+                        instrumentNameTimer = 120;
+                        new Sound(new File("res/sound/test_sound.wav")).play();
+                        break;
                     }
                 }
             }

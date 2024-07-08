@@ -7,11 +7,11 @@ import java.awt.*;
 
 public class ProjectileEntity extends Entity {
 
-    private int damage;
+    private final int damage;
     private final double cos;
     private final double sin;
-    public boolean isHostile;
-    public boolean isActive;
+    private final boolean isHostile;
+    private boolean isActive;
 
     public ProjectileEntity(double x, double y, double angle, boolean isHostile, int damage, int velocity, Image image, GamePanel panel) {
         super(x, y, panel);
@@ -27,23 +27,31 @@ public class ProjectileEntity extends Entity {
         this.panel = panel;
     }
 
-    public int getDamage() {
-        return damage;
-    }
-
-    private void move() {
-        x += velocity * cos;
-        y += velocity * sin;
+    public void update() {
+        move();
+        if (panel.tileManager.collisionMap[getCenterY() / TileManager.TILE_SIZE][getCenterX() / TileManager.TILE_SIZE]) {
+            deactivate();
+        }
     }
 
     public void deactivate() {
         isActive = false;
     }
 
-    public void update() {
-        move();
-        if (panel.tileManager.collisionMap[getCenterY() / TileManager.TILE_SIZE][getCenterX() / TileManager.TILE_SIZE]) {
-            deactivate();
-        }
+    public int getDamage() {
+        return damage;
+    }
+
+    public boolean isHostile() {
+        return isHostile;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    private void move() {
+        x += velocity * cos;
+        y += velocity * sin;
     }
 }

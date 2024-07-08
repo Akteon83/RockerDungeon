@@ -1,6 +1,6 @@
-package main.java;
+package main.java.instrument;
 
-import main.java.entity.ProjectileEntity;
+import main.java.Rarity;
 
 import javax.swing.*;
 
@@ -34,4 +34,10 @@ public class InstrumentTypes {
             (new ImageIcon("res/instrument/black_arrow_guitar_right.png")).getImage(),
             (new ImageIcon("res/instrument/black_arrow_guitar_left.png")).getImage(),
             (new ImageIcon("res/projectile/note_yellow.png")).getImage());
+
+    public static final Instrument ACOUSTIC_GUITAR = new Instrument("Guitar", Rarity.COMMON,
+            20, 10, 1, 30, false, false,
+            (new ImageIcon("res/instrument/guitar_right.png")).getImage(),
+            (new ImageIcon("res/instrument/guitar_left.png")).getImage(),
+            (new ImageIcon("res/projectile/note_grey.png")).getImage());
 }

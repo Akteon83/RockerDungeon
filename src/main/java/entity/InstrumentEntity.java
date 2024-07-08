@@ -1,9 +1,11 @@
 package main.java.entity;
 
 import main.java.GamePanel;
-import main.java.Instrument;
+import main.java.instrument.Instrument;
 
-public class InstrumentEntity extends Entity {
+import java.awt.*;
+
+public class InstrumentEntity extends Entity implements Dimensional {
 
     public Instrument instrument;
 
@@ -14,5 +16,10 @@ public class InstrumentEntity extends Entity {
         velocity = 0;
         this.instrument = instrument;
         this.image = instrument.imageRight;
+    }
+
+    @Override
+    public Rectangle getHitBox() {
+        return new Rectangle(getX(), getY(), width, height);
     }
 }

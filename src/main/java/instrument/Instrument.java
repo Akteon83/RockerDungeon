@@ -1,4 +1,6 @@
-package main.java;
+package main.java.instrument;
+
+import main.java.Rarity;
 
 import java.awt.*;
 
