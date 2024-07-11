@@ -13,12 +13,11 @@ public class Instrument {
     public int fireDelay;
     public boolean semiAuto;
     public boolean chargeable;
-    public Image imageRight;
-    public Image imageLeft;
+    public Image image;
     public Image projectileImage;
 
     public Instrument(String name, Rarity rarity, int projectileDamage, int projectileVelocity, int projectileCount,
-                      int fireDelay, boolean semiAuto, boolean chargeable, Image imageRight, Image imageLeft, Image projectileImage) {
+                      int fireDelay, boolean semiAuto, boolean chargeable, Image image, Image projectileImage) {
         this.name = name;
         this.rarity = rarity;
         this.projectileDamage = projectileDamage;
@@ -27,8 +26,7 @@ public class Instrument {
         this.projectileCount = projectileCount;
         this.semiAuto = semiAuto;
         this.chargeable = chargeable;
-        this.imageRight = imageRight;
-        this.imageLeft = imageLeft;
+        this.image = image;
         this.projectileImage = projectileImage;
         if (projectileCount < 1 || projectileCount > 10) this.projectileCount = 1;
     }

@@ -1,21 +1,30 @@
 package main.java.entity;
 
 import main.java.GamePanel;
+import main.java.level.Level;
 
 import java.awt.*;
 
 public abstract class Entity {
 
-    protected GamePanel panel;
+    public Level level;
     protected double x, y;
     protected int width, height;
     protected int velocity;
     protected Image image;
 
-    public Entity(double x, double y, GamePanel panel) {
+    public Entity(double x, double y, Level level) {
         this.x = x;
         this.y = y;
-        this.panel = panel;
+        this.level = level;
+    }
+
+    public void draw(Graphics2D g2, PlayerEntity player, GamePanel panel) {
+        Point drawPosition = new Point(getX() + panel.screenCenter.x - player.getCenterX(),
+                getY() + panel.screenCenter.y - player.getCenterY());
+        if (new Rectangle(drawPosition, new Dimension(width, height)).intersects(panel.screenRectangle)) {
+            g2.drawImage(image, drawPosition.x, drawPosition.y, width, height, null);
+        }
     }
 
     public int getX() {

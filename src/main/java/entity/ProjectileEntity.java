@@ -1,6 +1,6 @@
 package main.java.entity;
 
-import main.java.GamePanel;
+import main.java.level.Level;
 import main.java.tile.TileManager;
 
 import java.awt.*;
@@ -13,8 +13,8 @@ public class ProjectileEntity extends Entity {
     private final boolean isHostile;
     private boolean isActive;
 
-    public ProjectileEntity(double x, double y, double angle, boolean isHostile, int damage, int velocity, Image image, GamePanel panel) {
-        super(x, y, panel);
+    public ProjectileEntity(double x, double y, double angle, boolean isHostile, int damage, int velocity, Image image, Level level) {
+        super(x, y, level);
         width = 8 * 3;
         height = 8 * 3;
         isActive = true;
@@ -24,12 +24,11 @@ public class ProjectileEntity extends Entity {
         this.damage = damage;
         this.velocity = velocity;
         this.image = image;
-        this.panel = panel;
     }
 
     public void update() {
         move();
-        if (panel.tileManager.collisionMap[getCenterY() / TileManager.TILE_SIZE][getCenterX() / TileManager.TILE_SIZE]) {
+        if (level.map.collisionMap[getCenterY() / TileManager.TILE_SIZE][getCenterX() / TileManager.TILE_SIZE]) {
             deactivate();
         }
     }

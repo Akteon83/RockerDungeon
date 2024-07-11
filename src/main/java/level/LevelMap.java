@@ -12,23 +12,29 @@ import java.io.IOException;
 
 public class LevelMap {
 
-    private TileManager tileManager;
+    private final TileManager tileManager;
     public int[][] map;
     public boolean[][] collisionMap;
     public Image[][] visualMap;
     public Point spawnPoint;
 
-    public LevelMap(File file, GamePanel panel) {
-        tileManager = new TileManager(file, panel);
+    public LevelMap(File file) {
+        tileManager = new TileManager();
         loadMap(file);
         loadCollisionMap();
         loadVisualMap();
     }
 
     public void draw(Graphics2D g2, PlayerEntity player) {
+        Point screenCenter = player.level.panel.screenCenter;
         for (int y = 0; y < 32; ++y) {
             for (int x = 0; x < 32; ++x) {
-
+                Point drawPosition = new Point(x * TileManager.TILE_SIZE + screenCenter.x - player.getCenterX(),
+                        y * TileManager.TILE_SIZE + screenCenter.y - player.getCenterY());
+                if (new Rectangle(drawPosition, new Dimension(TileManager.TILE_SIZE, TileManager.TILE_SIZE))
+                        .intersects(new Rectangle(player.level.panel.screenSize))) {
+                    g2.drawImage(visualMap[y][x], drawPosition.x, drawPosition.y, TileManager.TILE_SIZE, TileManager.TILE_SIZE, null);
+                }
             }
         }
     }

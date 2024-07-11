@@ -5,7 +5,7 @@ import java.awt.*;
 
 public class UI {
 
-    private GamePanel panel;
+    private final GamePanel panel;
 
     public UI(GamePanel panel) {
         this.panel = panel;
